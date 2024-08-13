@@ -56,121 +56,94 @@ type StackTrace struct {
 }
 
 func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFrame *BindStackFrame, typeMap *def.TypeMap) (pos int, err error) {
-
 	v32_, err := util.ParseVarInt(data, &pos)
 	if err != nil {
 		return 0, err
 	}
-	_ = v32_
-
 	n := int(v32_)
 	this.IDMap = make(map[StackTraceRef]uint32, n)
 	this.StackTrace = make([]StackTrace, n)
 	for i := 0; i < n; i++ {
-
-		v32_, err := util.ParseVarInt(data, &pos)
+		v32_, err = util.ParseVarInt(data, &pos)
 		if err != nil {
 			return 0, err
 		}
-		_ = v32_
-
 		id := StackTraceRef(v32_)
 		for bindFieldIndex := 0; bindFieldIndex < len(bind.Fields); bindFieldIndex++ {
 			bindArraySize := 1
 			if bind.Fields[bindFieldIndex].Field.Array {
-
 				v32_, err := util.ParseVarInt(data, &pos)
 				if err != nil {
 					return 0, err
 				}
-				_ = v32_
-
 				bindArraySize = int(v32_)
+
 				if bind.Fields[bindFieldIndex].Field.Type == typeMap.T_STACK_FRAME {
 					*bind.Fields[bindFieldIndex].StackFrame = make([]StackFrame, 0, bindArraySize)
 				}
 			}
 			for bindArrayIndex := 0; bindArrayIndex < bindArraySize; bindArrayIndex++ {
 				if bind.Fields[bindFieldIndex].Field.ConstantPool {
-
 					v32_, err := util.ParseVarInt(data, &pos)
 					if err != nil {
 						return 0, err
 					}
 					_ = v32_
-
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
 					case typeMap.T_STRING:
-
 						s_, err := util.ParseString(data, &pos)
 						if err != nil {
 							return 0, err
 						}
-						_ = s_
-
 						// skipping
+						_ = s_
 					case typeMap.T_INT:
-
 						v32_, err := util.ParseVarInt(data, &pos)
 						if err != nil {
 							return 0, err
 						}
-						_ = v32_
-
 						// skipping
+						_ = v32_
 					case typeMap.T_LONG:
-
 						v64_, err := util.ParseVarLong(data, &pos)
 						if err != nil {
 							return 0, err
 						}
-						_ = v64_
-
 						// skipping
+						_ = v64_
 					case typeMap.T_BOOLEAN:
-
 						b_, err := util.ParseByte(data, &pos)
 						if err != nil {
 							return 0, err
 						}
-						_ = b_
-
 						if bind.Fields[bindFieldIndex].bool != nil {
 							*bind.Fields[bindFieldIndex].bool = b_ != 0
 						}
 					case typeMap.T_FLOAT:
-
 						v32_, err := util.ParseVarInt(data, &pos)
 						if err != nil {
 							return 0, err
 						}
-						_ = v32_
-
 						// skipping
+						_ = v32_
 					case typeMap.T_STACK_FRAME:
 						for bindStackFrameFieldIndex := 0; bindStackFrameFieldIndex < len(bindStackFrame.Fields); bindStackFrameFieldIndex++ {
 							bindStackFrameArraySize := 1
 							if bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Array {
-
 								v32_, err := util.ParseVarInt(data, &pos)
 								if err != nil {
 									return 0, err
 								}
-								_ = v32_
-
 								bindStackFrameArraySize = int(v32_)
 							}
 							for bindStackFrameArrayIndex := 0; bindStackFrameArrayIndex < bindStackFrameArraySize; bindStackFrameArrayIndex++ {
 								if bindStackFrame.Fields[bindStackFrameFieldIndex].Field.ConstantPool {
-
 									v32_, err := util.ParseVarInt(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = v32_
-
 									switch bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Type {
 									case typeMap.T_METHOD:
 										if bindStackFrame.Fields[bindStackFrameFieldIndex].MethodRef != nil {
@@ -185,52 +158,41 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 									bindStackFrameFieldTypeID := bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Type
 									switch bindStackFrameFieldTypeID {
 									case typeMap.T_STRING:
-
 										s_, err := util.ParseString(data, &pos)
 										if err != nil {
 											return 0, err
 										}
-										_ = s_
-
 										// skipping
+										_ = s_
 									case typeMap.T_INT:
-
 										v32_, err := util.ParseVarInt(data, &pos)
 										if err != nil {
 											return 0, err
 										}
-										_ = v32_
-
 										if bindStackFrame.Fields[bindStackFrameFieldIndex].uint32 != nil {
 											*bindStackFrame.Fields[bindStackFrameFieldIndex].uint32 = v32_
 										}
 									case typeMap.T_LONG:
-
 										v64_, err := util.ParseVarLong(data, &pos)
 										if err != nil {
 											return 0, err
 										}
-										_ = v64_
-
 										// skipping
+										_ = v64_
 									case typeMap.T_BOOLEAN:
-
 										b_, err := util.ParseByte(data, &pos)
 										if err != nil {
 											return 0, err
 										}
-										_ = b_
-
 										// skipping
+										_ = b_
 									case typeMap.T_FLOAT:
-
 										v32_, err := util.ParseVarInt(data, &pos)
 										if err != nil {
 											return 0, err
 										}
-										_ = v32_
-
 										// skipping
+										_ = v32_
 									default:
 										bindStackFrameFieldType := typeMap.IDMap[bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Type]
 										if bindStackFrameFieldType == nil || len(bindStackFrameFieldType.Fields) == 0 {
@@ -238,66 +200,45 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										}
 										bindStackFrameSkipObjects := 1
 										if bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Array {
-
 											v32_, err := util.ParseVarInt(data, &pos)
 											if err != nil {
 												return 0, err
 											}
-											_ = v32_
-
 											bindStackFrameSkipObjects = int(v32_)
 										}
 										for bindStackFrameSkipObjectIndex := 0; bindStackFrameSkipObjectIndex < bindStackFrameSkipObjects; bindStackFrameSkipObjectIndex++ {
 											for bindStackFrameskipFieldIndex := 0; bindStackFrameskipFieldIndex < len(bindStackFrameFieldType.Fields); bindStackFrameskipFieldIndex++ {
 												bindStackFrameSkipFieldType := bindStackFrameFieldType.Fields[bindStackFrameskipFieldIndex].Type
 												if bindStackFrameFieldType.Fields[bindStackFrameskipFieldIndex].ConstantPool {
-
-													v32_, err := util.ParseVarInt(data, &pos)
+													_, err := util.ParseVarInt(data, &pos)
 													if err != nil {
 														return 0, err
 													}
-													_ = v32_
-
 												} else if bindStackFrameSkipFieldType == typeMap.T_STRING {
-
-													s_, err := util.ParseString(data, &pos)
+													_, err := util.ParseString(data, &pos)
 													if err != nil {
 														return 0, err
 													}
-													_ = s_
-
 												} else if bindStackFrameSkipFieldType == typeMap.T_INT {
-
-													v32_, err := util.ParseVarInt(data, &pos)
+													_, err := util.ParseVarInt(data, &pos)
 													if err != nil {
 														return 0, err
 													}
-													_ = v32_
-
 												} else if bindStackFrameSkipFieldType == typeMap.T_FLOAT {
-
-													v32_, err := util.ParseVarInt(data, &pos)
+													_, err := util.ParseVarInt(data, &pos)
 													if err != nil {
 														return 0, err
 													}
-													_ = v32_
-
 												} else if bindStackFrameSkipFieldType == typeMap.T_LONG {
-
-													v64_, err := util.ParseVarLong(data, &pos)
+													_, err := util.ParseVarLong(data, &pos)
 													if err != nil {
 														return 0, err
 													}
-													_ = v64_
-
 												} else if bindStackFrameSkipFieldType == typeMap.T_BOOLEAN {
-
-													b_, err := util.ParseByte(data, &pos)
+													_, err := util.ParseByte(data, &pos)
 													if err != nil {
 														return 0, err
 													}
-													_ = b_
-
 												} else {
 													return 0, fmt.Errorf("nested objects not implemented. ")
 												}
@@ -307,6 +248,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 								}
 							}
 						}
+
 						if bind.Fields[bindFieldIndex].StackFrame != nil {
 							*bind.Fields[bindFieldIndex].StackFrame = append(*bind.Fields[bindFieldIndex].StackFrame, bindStackFrame.Temp)
 						}
@@ -317,66 +259,45 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 						}
 						bindSkipObjects := 1
 						if bind.Fields[bindFieldIndex].Field.Array {
-
 							v32_, err := util.ParseVarInt(data, &pos)
 							if err != nil {
 								return 0, err
 							}
-							_ = v32_
-
 							bindSkipObjects = int(v32_)
 						}
 						for bindSkipObjectIndex := 0; bindSkipObjectIndex < bindSkipObjects; bindSkipObjectIndex++ {
 							for bindskipFieldIndex := 0; bindskipFieldIndex < len(bindFieldType.Fields); bindskipFieldIndex++ {
 								bindSkipFieldType := bindFieldType.Fields[bindskipFieldIndex].Type
 								if bindFieldType.Fields[bindskipFieldIndex].ConstantPool {
-
-									v32_, err := util.ParseVarInt(data, &pos)
+									_, err := util.ParseVarInt(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = v32_
-
 								} else if bindSkipFieldType == typeMap.T_STRING {
-
-									s_, err := util.ParseString(data, &pos)
+									_, err := util.ParseString(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = s_
-
 								} else if bindSkipFieldType == typeMap.T_INT {
-
-									v32_, err := util.ParseVarInt(data, &pos)
+									_, err := util.ParseVarInt(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = v32_
-
 								} else if bindSkipFieldType == typeMap.T_FLOAT {
-
-									v32_, err := util.ParseVarInt(data, &pos)
+									_, err := util.ParseVarInt(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = v32_
-
 								} else if bindSkipFieldType == typeMap.T_LONG {
-
-									v64_, err := util.ParseVarLong(data, &pos)
+									_, err := util.ParseVarLong(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = v64_
-
 								} else if bindSkipFieldType == typeMap.T_BOOLEAN {
-
-									b_, err := util.ParseByte(data, &pos)
+									_, err := util.ParseByte(data, &pos)
 									if err != nil {
 										return 0, err
 									}
-									_ = b_
-
 								} else {
 									return 0, fmt.Errorf("nested objects not implemented. ")
 								}
@@ -386,6 +307,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 				}
 			}
 		}
+
 		this.StackTrace[i] = bind.Temp
 		this.IDMap[id] = uint32(i)
 	}

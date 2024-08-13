@@ -215,48 +215,36 @@ func generate(typ *def.Class, opt options) string {
 		}
 
 		{{- if .CPool}}
-
 			type {{.RefName}} uint32
 			type {{.ListName}} struct {
-
 				{{- if .DoNotKeepData}}
 				{{- else}}
-
 					{{- if .SortedIDs}}
 						IDMap	IDMap[{{.RefName}}]
 					{{- else}}
 						IDMap	map[{{.RefName}}]uint32
 					{{- end}}
 					{{.Name}}	[]{{.Name}}
-
 				{{- end}}
-
 			}
-
 		{{- end}}
 
 		type {{.Name}} struct {
-
 			{{- range .Fields}}
-
 				{{- if skipField .Name}}
 					// skip {{.Name}}
 				{{- else}}
-
 					{{- if .Array}}
 						{{capitalize .Name}}	[]{{goTypeName .}}
 					{{- else}}
 						{{capitalize .Name}}	{{goTypeName .}}
 					{{- end}}
-
 				{{- end}}
-
 			{{- end}}
 		}
 
 		func (this *{{.Name}}{{- if .CPool}}List{{- end}}) Parse(data []byte, bind *{{.BindName}} {{- range .NonBasicFields}}, bind{{typeNameForCPoolID .Type}} *{{bindNameForCPoolID .Type}}{{- end}}, typeMap *def.TypeMap) (pos int, err error) {
 			{{- if .CPool}}
-
 				v32_, err := util.ParseVarInt(data, &pos)
 				if err != nil {
 					return 0, err
@@ -272,7 +260,6 @@ func generate(typ *def.Class, opt options) string {
 					this.{{.Name}} = make([]{{.Name}}, n)
 				{{- end}}
 				for i := 0; i < n; i++ {
-
 					v32_, err = util.ParseVarInt(data, &pos)
 					if err != nil {
 						return 0, err

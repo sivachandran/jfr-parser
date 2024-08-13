@@ -13,72 +13,108 @@ import (
 )
 
 func main() {
-	write("types/frametype.go", generate(&Type_jdk_types_FrameType, options{
-		cpool:     true,
-		sortedIDs: false,
-	}))
-	write("types/stackframe.go", generate(&Type_jdk_types_StackFrame, options{
-		skipFields: []string{
-			"bytecodeIndex", "type",
+	types := []struct {
+		Dest string
+		Type *def.Class
+		Opt  options
+	}{
+		{
+			Dest: "types/frametype.go",
+			Type: &Type_jdk_types_FrameType,
+			Opt:  options{cpool: true, sortedIDs: false},
 		},
-		cpool: false,
-	}))
-	write("types/threadstate.go", generate(&Type_jdk_types_ThreadState, options{
-		cpool: true,
-	}))
-	write("types/thread.go", generate(&Type_java_lang_Thread, options{
-		cpool: true,
-	}))
-	write("types/class.go", generate(&Type_java_lang_Class, options{
-		skipFields: []string{
-			"classLoader",
-			"package",
-			"modifiers",
+		{
+			Dest: "types/stackframe.go",
+			Type: &Type_jdk_types_StackFrame,
+			Opt: options{
+				skipFields: []string{"bytecodeIndex", "type"},
+				cpool:      false,
+			},
 		},
-		cpool: true,
-	}))
-	write("types/classloader.go", generate(&Type_jdk_types_ClassLoader, options{
-		cpool: true,
-	}))
-	write("types/method.go", generate(&Type_jdk_types_Method, options{
-		cpool:     true,
-		sortedIDs: true,
-		skipFields: []string{
-			"hidden",
-			"descriptor",
-			"modifiers",
+		{
+			Dest: "types/threadstate.go",
+			Type: &Type_jdk_types_ThreadState,
+			Opt:  options{cpool: true},
 		},
-	}))
-	write("types/package.go", generate(&Type_jdk_types_Package, options{
-		cpool: true,
-	}))
-	write("types/symbol.go", generate(&Type_jdk_types_Symbol, options{
-		cpool: true,
-	}))
-	write("types/loglevel.go", generate(&Type_profiler_types_LogLevel, options{
-		cpool: true,
-	}))
-	write("types/stacktrace.go", generate(&Type_jdk_types_StackTrace, options{
-		cpool: true,
-	}))
+		{
+			Dest: "types/thread.go",
+			Type: &Type_java_lang_Thread,
+			Opt:  options{cpool: true},
+		},
+		{
+			Dest: "types/class.go",
+			Type: &Type_java_lang_Class,
+			Opt: options{
+				skipFields: []string{
+					"classLoader",
+					"package",
+					"modifiers",
+				},
+				cpool: true,
+			},
+		},
+		{
+			Dest: "types/classloader.go",
+			Type: &Type_jdk_types_ClassLoader,
+			Opt:  options{cpool: true},
+		},
+		{
+			Dest: "types/method.go",
+			Type: &Type_jdk_types_Method,
+			Opt: options{
+				cpool:     true,
+				sortedIDs: true,
+				skipFields: []string{
+					"hidden",
+					"descriptor",
+					"modifiers",
+				},
+			},
+		},
+		{
+			Dest: "types/package.go",
+			Type: &Type_jdk_types_Package,
+			Opt:  options{cpool: true},
+		},
+		{
+			Dest: "types/symbol.go",
+			Type: &Type_jdk_types_Symbol,
+			Opt:  options{cpool: true},
+		},
+		{
+			Dest: "types/loglevel.go",
+			Type: &Type_profiler_types_LogLevel,
+			Opt:  options{cpool: true},
+		},
+		{
+			Dest: "types/stacktrace.go",
+			Type: &Type_jdk_types_StackTrace,
+			Opt:  options{cpool: true},
+		},
+		{Dest: "types/active_settings.go", Type: &Type_jdk_ActiveSetting},
+		{Dest: "types/execution_sample.go", Type: &Type_jdk_ExecutionSample},
+		{Dest: "types/allocation_in_new_tlab.go", Type: &Type_jdk_ObjectAllocationInNewTLAB},
+		{Dest: "types/allocation_outside_tlab.go", Type: &Type_jdk_ObjectAllocationOutsideTLAB},
+		{Dest: "types/monitor_enter.go", Type: &Type_jdk_JavaMonitorEnter},
+		{Dest: "types/thread_park.go", Type: &Type_jdk_ThreadPark},
+		{Dest: "types/live_object.go", Type: &Type_profiler_LiveObject},
+		{
+			Dest: "types/skipper.go",
+			Type: &def.Class{
+				Name:   "SkipConstantPool",
+				ID:     0,
+				Fields: []def.Field{},
+			},
+			Opt: options{
+				cpool:         true,
+				doNotKeepData: true,
+			},
+		},
+	}
 
-	write("types/active_settings.go", generate(&Type_jdk_ActiveSetting, options{}))
-
-	write("types/execution_sample.go", generate(&Type_jdk_ExecutionSample, options{}))
-	write("types/allocation_in_new_tlab.go", generate(&Type_jdk_ObjectAllocationInNewTLAB, options{}))
-	write("types/allocation_outside_tlab.go", generate(&Type_jdk_ObjectAllocationOutsideTLAB, options{}))
-	write("types/monitor_enter.go", generate(&Type_jdk_JavaMonitorEnter, options{}))
-	write("types/thread_park.go", generate(&Type_jdk_ThreadPark, options{}))
-	write("types/live_object.go", generate(&Type_profiler_LiveObject, options{}))
-	write("types/skipper.go", generate(&def.Class{
-		Name:   "SkipConstantPool",
-		ID:     0,
-		Fields: []def.Field{},
-	}, options{
-		cpool:         true,
-		doNotKeepData: true,
-	}))
-
+	for i := range types {
+		write(types[i].Dest, generate(types[i].Type, types[i].Opt))
+	}
 }
 
 func write(dst, s string) {
